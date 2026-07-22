@@ -22,6 +22,7 @@ def get_client(settings: Settings = Depends(get_settings)) -> AsyncAnthropic:
 # --- schemas ---
 class AskRequest(BaseModel):
     prompt: str = Field(min_length=1)
+    temperature: float = Field(default=1.0, ge=0.0, le=1.0)
 
 
 class AskResponse(BaseModel):
@@ -54,5 +55,6 @@ async def ask(
         answer=response.content[0].text,
         input_tokens=in_tok,
         output_tokens=out_tok,
+        temperature=req.temperature,
         cost_usd=round(cost_usd(settings.default_model, in_tok, out_tok), 6),
     )
