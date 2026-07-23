@@ -1,11 +1,21 @@
+from functools import lru_cache
+
 from anthropic import AsyncAnthropic
 
 from config import Settings
 
 
+@lru_cache
+def get_client(api_key: str) -> AsyncAnthropic:
+    # One shared AsyncAnthropic per API key. The client wraps an httpx pool with
+    # keep-alive connections, so reusing it avoids re-doing DNS+TCP+TLS per call.
+    # Safe for concurrent use across asyncio tasks.
+    return AsyncAnthropic(api_key=api_key)
+
+
 async def ask_once(settings: Settings, prompt: str) -> str:
     # async client — plays nicely with FastAPI and asyncio.gather
-    client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+    client = get_client(settings.anthropic_api_key)
 
     # the core call: model + token cap + a list of messages
     response = await client.messages.create(
@@ -18,7 +28,7 @@ async def ask_once(settings: Settings, prompt: str) -> str:
     return response.content[0].text
 
 async def ask_streaming(settings: Settings, prompt: str) -> str:
-    client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+    client = get_client(settings.anthropic_api_key)
 
     collected = []
     # stream() opens an async context manager over the response
@@ -51,7 +61,7 @@ def cost_usd(model: str, input_tokens: int, output_tokens: int) -> float:
 
 
 async def ask_with_usage(settings: Settings, prompt: str) -> dict:
-    client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+    client = get_client(settings.anthropic_api_key)
 
     response = await client.messages.create(
         model=settings.default_model,
@@ -65,6 +75,40 @@ async def ask_with_usage(settings: Settings, prompt: str) -> dict:
 
     return {
         "answer": response.content[0].text,
+        "input_tokens": in_tok,
+        "output_tokens": out_tok,
+        "cost_usd": round(cost_usd(settings.default_model, in_tok, out_tok), 6),
+    }
+
+# llm.py (add)
+from typing import TypeVar
+
+from pydantic import BaseModel
+
+T = TypeVar("T", bound=BaseModel)
+
+
+async def extract_structured(settings: Settings, text: str, schema: type[T]) -> dict:
+    # Same shape as ask_with_usage: reuse the shared client, return usage + cost.
+    client = get_client(settings.anthropic_api_key)
+
+    response = await client.messages.parse(
+        model=settings.default_model,
+        max_tokens=settings.max_tokens,
+        temperature=0,  # extraction wants determinism, not creativity
+        # The prompt is about the TASK; the schema enforces the format (no "return JSON" begging).
+        messages=[{"role": "user", "content": f"Extract structured data from this message:\n\n{text}"}],
+        output_format=schema,  # SDK derives the JSON schema from your pydantic model
+    )
+
+    # Structured outputs still can stop early: refusal or hitting max_tokens → not schema-shaped.
+    if response.stop_reason in ("refusal", "max_tokens") or response.parsed_output is None:
+        raise RuntimeError(f"extraction not schema-shaped (stop_reason={response.stop_reason})")
+
+    in_tok = response.usage.input_tokens
+    out_tok = response.usage.output_tokens
+    return {
+        "result": response.parsed_output,  # already a validated `schema` instance
         "input_tokens": in_tok,
         "output_tokens": out_tok,
         "cost_usd": round(cost_usd(settings.default_model, in_tok, out_tok), 6),

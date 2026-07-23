@@ -4,7 +4,8 @@ from pydantic import BaseModel, Field
 from anthropic import AsyncAnthropic
 
 from config import Settings
-from llm import cost_usd
+from llm import cost_usd, extract_structured, get_client as get_cached_client
+from schemas import SupportTicket
 
 app = FastAPI()
 
@@ -14,9 +15,9 @@ def get_settings() -> Settings:
     return Settings()
 
 
-# --- dependency: a shared Anthropic client built from settings ---
+# --- dependency: the shared Anthropic client (cached per API key in llm.py) ---
 def get_client(settings: Settings = Depends(get_settings)) -> AsyncAnthropic:
-    return AsyncAnthropic(api_key=settings.anthropic_api_key)
+    return get_cached_client(settings.anthropic_api_key)
 
 
 # --- schemas ---
@@ -42,6 +43,7 @@ async def ask(
         response = await client.messages.create(
             model=settings.default_model,
             max_tokens=settings.max_tokens,
+            temperature=req.temperature,  # actually forward it to the API
             messages=[{"role": "user", "content": req.prompt}],
         )
     except Exception as e:
@@ -55,6 +57,34 @@ async def ask(
         answer=response.content[0].text,
         input_tokens=in_tok,
         output_tokens=out_tok,
-        temperature=req.temperature,
         cost_usd=round(cost_usd(settings.default_model, in_tok, out_tok), 6),
+    )
+
+class ExtractRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=10_000)
+
+
+class ExtractResponse(BaseModel):
+    ticket: SupportTicket           # nested validated model
+    input_tokens: int
+    output_tokens: int
+    cost_usd: float
+
+
+@app.post("/extract")
+async def extract(
+    req: ExtractRequest,
+    settings: Settings = Depends(get_settings),
+) -> ExtractResponse:
+    try:
+        out = await extract_structured(settings, req.text, SupportTicket)
+    except Exception as e:
+        # same discipline as /ask: don't leak internals
+        raise HTTPException(status_code=502, detail="extraction failed") from e
+
+    return ExtractResponse(
+        ticket=out["result"],
+        input_tokens=out["input_tokens"],
+        output_tokens=out["output_tokens"],
+        cost_usd=out["cost_usd"],
     )
