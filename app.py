@@ -88,3 +88,30 @@ async def extract(
         output_tokens=out["output_tokens"],
         cost_usd=out["cost_usd"],
     )
+
+# app.py (add)
+from llm import run_with_tools
+
+
+class AgentRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=4_000)
+
+
+class AgentResponse(BaseModel):
+    answer: str
+    turns_used: int
+    input_tokens: int
+    output_tokens: int
+    cost_usd: float
+
+
+@app.post("/agent")
+async def agent(
+    req: AgentRequest,
+    settings: Settings = Depends(get_settings),
+) -> AgentResponse:
+    try:
+        out = await run_with_tools(settings, req.message)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail="agent run failed") from e
+    return AgentResponse(**out)

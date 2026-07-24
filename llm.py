@@ -113,3 +113,60 @@ async def extract_structured(settings: Settings, text: str, schema: type[T]) -> 
         "output_tokens": out_tok,
         "cost_usd": round(cost_usd(settings.default_model, in_tok, out_tok), 6),
     }
+
+# llm.py (add)
+from tools import TOOLS, execute_tool
+
+
+async def run_with_tools(settings: Settings, user_message: str, max_turns: int = 5) -> dict:
+    client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+    messages = [{"role": "user", "content": user_message}]
+    total_in = total_out = 0
+    response = None
+
+    for _ in range(max_turns):  # circuit breaker: never loop forever
+        response = await client.messages.create(
+            model=settings.default_model,
+            max_tokens=settings.max_tokens,
+            tools=TOOLS,          # schemas are re-sent on EVERY turn — see the cost note
+            messages=messages,
+        )
+        total_in += response.usage.input_tokens
+        total_out += response.usage.output_tokens
+
+        if response.stop_reason != "tool_use":
+            break  # model is done talking to tools
+
+        # Append the assistant turn VERBATIM, tool_use blocks included
+        messages.append({"role": "assistant", "content": response.content})
+
+        # The model may request several tools at once — ALL results go in ONE user message
+        results = []
+        for block in response.content:
+            if block.type != "tool_use":
+                continue
+            try:
+                output = execute_tool(block.name, block.input)
+                results.append({
+                    "type": "tool_result",
+                    "tool_use_id": block.id,   # must match the request id
+                    "content": output,
+                })
+            except Exception as e:
+                results.append({
+                    "type": "tool_result",
+                    "tool_use_id": block.id,
+                    "content": f"Error: {e}",
+                    "is_error": True,          # let the model recover instead of hallucinating
+                })
+        messages.append({"role": "user", "content": results})
+
+    # content is a list of blocks; concatenate the text ones
+    answer = "".join(b.text for b in response.content if b.type == "text")
+    return {
+        "answer": answer,
+        "turns_used": len(messages),
+        "input_tokens": total_in,
+        "output_tokens": total_out,
+        "cost_usd": round(cost_usd(settings.default_model, total_in, total_out), 6),
+    }
