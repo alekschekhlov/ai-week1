@@ -103,6 +103,8 @@ class AgentResponse(BaseModel):
     input_tokens: int
     output_tokens: int
     cost_usd: float
+    cache_reads: int
+    cache_writes: int
 
 
 @app.post("/agent")

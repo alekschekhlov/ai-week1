@@ -4,6 +4,9 @@ from anthropic import AsyncAnthropic
 
 from config import Settings
 
+from prompts import AGENT_SYSTEM
+
+
 
 @lru_cache
 def get_client(api_key: str) -> AsyncAnthropic:
@@ -119,20 +122,31 @@ from tools import TOOLS, execute_tool
 
 
 async def run_with_tools(settings: Settings, user_message: str, max_turns: int = 5) -> dict:
+
     client = AsyncAnthropic(api_key=settings.anthropic_api_key)
     messages = [{"role": "user", "content": user_message}]
     total_in = total_out = 0
     response = None
+    cache_writes = cache_reads = 0
 
     for _ in range(max_turns):  # circuit breaker: never loop forever
         response = await client.messages.create(
             model=settings.default_model,
             max_tokens=settings.max_tokens,
-            tools=TOOLS,          # schemas are re-sent on EVERY turn — see the cost note
+            # system as a block list so we can attach cache_control to it
+            system=[{
+                "type": "text",
+                "text": AGENT_SYSTEM,
+                "cache_control": {"type": "ephemeral"},   # 5-minute TTL by default
+            }],
+            tools=TOOLS,
             messages=messages,
         )
         total_in += response.usage.input_tokens
         total_out += response.usage.output_tokens
+
+        cache_writes += getattr(response.usage, "cache_creation_input_tokens", 0) or 0
+        cache_reads += getattr(response.usage, "cache_read_input_tokens", 0) or 0
 
         if response.stop_reason != "tool_use":
             break  # model is done talking to tools
@@ -169,4 +183,6 @@ async def run_with_tools(settings: Settings, user_message: str, max_turns: int =
         "input_tokens": total_in,
         "output_tokens": total_out,
         "cost_usd": round(cost_usd(settings.default_model, total_in, total_out), 6),
+        "cache_writes":cache_writes,
+        "cache_reads": cache_reads
     }
