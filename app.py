@@ -7,6 +7,10 @@ from config import Settings
 from llm import cost_usd, extract_structured, get_client as get_cached_client
 from schemas import SupportTicket
 
+from agent import run_support_turn
+from schemas import SupportReply
+
+
 app = FastAPI()
 
 
@@ -117,3 +121,29 @@ async def agent(
     except Exception as e:
         raise HTTPException(status_code=502, detail="agent run failed") from e
     return AgentResponse(**out)
+
+class SupportRequest(BaseModel):
+    conversation_id: str = Field(min_length=1, max_length=64)
+    message: str = Field(min_length=1, max_length=4_000)
+
+
+class SupportResponse(BaseModel):
+    reply: SupportReply
+    api_calls: int
+    input_tokens: int
+    output_tokens: int
+    cache_reads: int
+    cache_writes: int
+    cost_usd: float
+
+
+@app.post("/support")
+async def support(
+    req: SupportRequest,
+    settings: Settings = Depends(get_settings),
+) -> SupportResponse:
+    try:
+        reply, usage = await run_support_turn(settings, req.conversation_id, req.message)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail="support turn failed") from e
+    return SupportResponse(reply=reply, **usage)
