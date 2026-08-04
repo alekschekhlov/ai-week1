@@ -1,63 +1,92 @@
-# db.py
+# db.py — full RAG retrieval store: chunked ingest + HNSW index + metadata filter
 import numpy as np
 import psycopg
 import voyageai
 from pgvector.psycopg import register_vector
-from corpus import embed_corpus, MODEL, DIMS   # Day 2's cached embedder
-from dotenv import load_dotenv
 
-load_dotenv()
+from corpus import embed_corpus, MODEL, DIMS   # Day 2's cached embedder
+from chunk import chunk_text                    # Day 5's recursive splitter
 
 vo = voyageai.Client()
 DSN = "postgresql://postgres:pass@localhost:5432/postgres"
 
-# (text, source) — source is METADATA we can filter on with plain SQL
-CORPUS = [
-  ("Kafka consumer groups let multiple consumers share a topic's partitions.", "kafka"),
-  ("Reset a consumer group offset with kafka-consumer-groups --reset-offsets.", "kafka"),
-  ("A Kafka topic is split into partitions for parallelism.", "kafka"),
-  ("Redis is an in-memory key-value store often used for caching.", "redis"),
-  ("PostgreSQL supports JSONB columns for semi-structured data.", "postgres"),
+# Longer, realistic docs (not the cheat sentences). (text, source) — source is filterable metadata.
+DOCS = [
+  ("""Kafka consumer groups let multiple consumers cooperate to read a topic.
+Each partition is assigned to exactly one consumer within the group, which is how
+Kafka parallelizes consumption across many machines.
+
+When a consumer joins or leaves, Kafka triggers a rebalance: partitions are
+reassigned across the surviving consumers. Frequent rebalances hurt throughput,
+so tuning session.timeout.ms and max.poll.interval.ms matters in production.
+
+Offsets track how far a group has read. They are committed back to Kafka, either
+automatically or manually. To reprocess data, reset offsets with the
+kafka-consumer-groups tool, choosing --to-earliest, --to-latest, or a timestamp.""", "kafka"),
+
+  ("""Redis is an in-memory key-value store, so reads and writes are extremely fast
+because data lives in RAM rather than on disk. It is most commonly used as a cache
+in front of a slower database.
+
+Redis supports rich data types beyond plain strings: lists, sets, sorted sets,
+hashes and streams. Persistence is optional via RDB snapshots or the AOF log,
+letting you trade durability for speed depending on the use case.""", "redis"),
+
+  ("""PostgreSQL is a relational database with strong support for semi-structured
+data. The JSONB column type stores JSON in a decomposed binary form, which can be
+indexed with GIN indexes for fast containment queries.
+
+With the pgvector extension, PostgreSQL also stores embedding vectors, so you can
+run semantic similarity search next to ordinary SQL filters in a single query.""", "postgres"),
 ]
 
 
 def get_conn():
   conn = psycopg.connect(DSN, autocommit=True)
   conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
-  register_vector(conn)          # lets us pass numpy arrays straight in as `vector`
+  register_vector(conn)                        # pass numpy arrays straight in as `vector`
   return conn
 
 
 def setup(conn):
-  conn.execute("DROP TABLE IF EXISTS documents")
+  conn.execute("DROP TABLE IF EXISTS chunks")
   conn.execute(f"""
-        CREATE TABLE documents (
-            id        BIGSERIAL PRIMARY KEY,
-            content   TEXT NOT NULL,
-            source    TEXT NOT NULL,          -- metadata, filter with WHERE
-            embedding vector({DIMS})          -- {DIMS} floats per row
+        CREATE TABLE chunks (
+            id          BIGSERIAL PRIMARY KEY,
+            source      TEXT NOT NULL,           -- inherited doc metadata, filter with WHERE
+            chunk_index INT  NOT NULL,           -- position of the chunk within its doc
+            content     TEXT NOT NULL,
+            embedding   vector({DIMS})
         )
     """)
-  vecs = embed_corpus([c for c, _ in CORPUS])["vectors"]   # cached -> free on repeat
-  for content, source in CORPUS:
+  for text, source in DOCS:
+    _ingest_doc(conn, text, source)
+
+  # HNSW index (Day 3's ANN, one line). Operator class MUST match the <=> used in queries.
+  conn.execute("CREATE INDEX ON chunks USING hnsw (embedding vector_cosine_ops)")
+
+
+def _ingest_doc(conn, text: str, source: str):
+  pieces = chunk_text(text, max_tokens=512, overlap=80)   # Day 5 recursive chunking
+  vecs = embed_corpus(pieces)["vectors"]                  # cached -> free on repeat runs
+  for i, piece in enumerate(pieces):
     conn.execute(
-      "INSERT INTO documents (content, source, embedding) VALUES (%s, %s, %s)",
-      (content, source, np.array(vecs[content])),
+      "INSERT INTO chunks (source, chunk_index, content, embedding) VALUES (%s, %s, %s, %s)",
+      (source, i, piece, np.array(vecs[piece])),
     )
-  # HNSW index. Operator class vector_cosine_ops MUST match the <=> used when querying.
-  conn.execute("CREATE INDEX ON documents USING hnsw (embedding vector_cosine_ops)")
 
 
 def search(conn, query: str, k: int = 3, source: str | None = None):
   qv = np.array(vo.embed([query], model=MODEL, input_type="query",
                          output_dimension=DIMS).embeddings[0])
-  # <=> is cosine DISTANCE; 1 - distance = similarity, to match Day 3's numpy scores.
-  sql = "SELECT content, source, 1 - (embedding <=> %s) AS similarity FROM documents"
+  # <=> is cosine DISTANCE (smaller = closer); 1 - distance = similarity, matching Day 3.
+  sql = """SELECT source, chunk_index, content, 1 - (embedding <=> %s) AS similarity
+           FROM chunks"""
   params: list = [qv]
-  if source:                                  # metadata filter sits right next to vector search
+  if source:                                   # metadata filter next to vector search
     sql += " WHERE source = %s"
     params.append(source)
-  sql += " ORDER BY embedding <=> %s LIMIT %s"   # same operator as the index
+  sql += " ORDER BY embedding <=> %s LIMIT %s"  # same operator as the index
   params += [qv, k]
   return conn.execute(sql, params).fetchall()
 
@@ -65,12 +94,16 @@ def search(conn, query: str, k: int = 3, source: str | None = None):
 if __name__ == "__main__":
   conn = get_conn()
   setup(conn)
-  for q in ["how do I rewind a consumer group?", "what is a fast in-memory store?"]:
+  for q in ["how do I rewind a consumer group?",
+            "what is a fast in-memory cache?",
+            "can Postgres do semantic search?"]:
     print(f"\nQ: {q}")
-    for content, source, sim in search(conn, q):
-      print(f"  {sim:.3f}  [{source}] {content}")
+    for source, idx, content, sim in search(conn, q):
+      snippet = content.replace("\n", " ")[:70]
+      print(f"  {sim:.3f}  [{source}#{idx}] {snippet}...")
 
-  # Metadata filter: ask about in-memory store, but restrict to kafka docs only
-  print("\nQ (source=kafka only): in-memory store?")
-  for content, source, sim in search(conn, "in-memory store?", source="kafka"):
-    print(f"  {sim:.3f}  [{source}] {content}")
+  # Metadata filter demo: ask broadly, restrict to kafka chunks only
+  print("\nQ (source=kafka only): how to cache data?")
+  for source, idx, content, sim in search(conn, "how to cache data?", source="kafka"):
+    snippet = content.replace("\n", " ")[:70]
+    print(f"  {sim:.3f}  [{source}#{idx}] {snippet}...")
