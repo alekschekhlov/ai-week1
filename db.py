@@ -67,7 +67,7 @@ def setup(conn):
 
 
 def _ingest_doc(conn, text: str, source: str):
-  pieces = chunk_text(text, max_tokens=125, overlap=15)   # Day 5 recursive chunking
+  pieces = chunk_text(text, max_tokens=512, overlap=80)   # Day 5 recursive chunking
   vecs = embed_corpus(pieces)["vectors"]                  # cached -> free on repeat runs
   for i, piece in enumerate(pieces):
     conn.execute(
