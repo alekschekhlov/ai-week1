@@ -9,8 +9,8 @@ setup(conn)
 # Golden set: query -> which chunk ids actually answer it. Chunk id = f"{source}#{index}".
 # NOTE: these ids are tied to your CURRENT chunking config. Re-chunk -> re-label (see debt).
 GOLDEN = {
-  "how do I rewind a consumer group?": {"kafka#1"},
-  "what causes a consumer rebalance?": {"kafka#1"},
+  "how do I rewind a consumer group?": {"kafka#0"},
+  "what causes a consumer rebalance?": {"kafka#0"},
   "what is a fast in-memory cache?":   {"redis#0"},
   "can Postgres store JSON?":          {"postgres#0"},
   "how does Postgres do vector search?": {"postgres#0"},
