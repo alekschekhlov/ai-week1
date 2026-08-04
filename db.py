@@ -67,7 +67,7 @@ def setup(conn):
 
 
 def _ingest_doc(conn, text: str, source: str):
-  pieces = chunk_text(text, max_tokens=512, overlap=80)   # Day 5 recursive chunking
+  pieces = chunk_text(text, max_tokens=125, overlap=15)   # Day 5 recursive chunking
   vecs = embed_corpus(pieces)["vectors"]                  # cached -> free on repeat runs
   for i, piece in enumerate(pieces):
     conn.execute(
@@ -76,7 +76,9 @@ def _ingest_doc(conn, text: str, source: str):
     )
 
 
-def search(conn, query: str, k: int = 3, source: str | None = None):
+# db.py — let search fetch a wide net for reranking
+def search(conn, query: str, k: int = 30, source: str | None = None):
+  # k defaults higher now: bi-encoder casts a WIDE net, reranker narrows it later
   qv = np.array(vo.embed([query], model=MODEL, input_type="query",
                          output_dimension=DIMS).embeddings[0])
   # <=> is cosine DISTANCE (smaller = closer); 1 - distance = similarity, matching Day 3.
