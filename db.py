@@ -53,17 +53,18 @@ def setup(conn):
   conn.execute(f"""
         CREATE TABLE chunks (
             id          BIGSERIAL PRIMARY KEY,
-            source      TEXT NOT NULL,           -- inherited doc metadata, filter with WHERE
-            chunk_index INT  NOT NULL,           -- position of the chunk within its doc
+            source      TEXT NOT NULL,
+            chunk_index INT  NOT NULL,
             content     TEXT NOT NULL,
-            embedding   vector({DIMS})
+            embedding   vector({DIMS}),
+            -- generated tsvector: Postgres keeps the lexical index in sync automatically
+            fts         tsvector GENERATED ALWAYS AS (to_tsvector('simple', content)) STORED
         )
     """)
   for text, source in DOCS:
     _ingest_doc(conn, text, source)
-
-  # HNSW index (Day 3's ANN, one line). Operator class MUST match the <=> used in queries.
-  conn.execute("CREATE INDEX ON chunks USING hnsw (embedding vector_cosine_ops)")
+  conn.execute("CREATE INDEX ON chunks USING hnsw (embedding vector_cosine_ops)")  # dense
+  conn.execute("CREATE INDEX ON chunks USING gin (fts)")                            # lexical (BM25-ish)
 
 
 def _ingest_doc(conn, text: str, source: str):
