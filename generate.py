@@ -4,6 +4,7 @@ from anthropic import AsyncAnthropic
 from config import Settings
 from db import get_conn                       # or accept a pooled conn
 from hybrid import hybrid_search
+from llm import cost_usd
 from rerank import rerank
 
 RAG_SYSTEM = """You answer questions using ONLY the provided context.
@@ -45,10 +46,9 @@ If the documents don't contain the answer, say exactly:
 Keep answers under 100 words."""   # note: no manual [id] instruction — the API handles attribution
 
 
-async def answer_cited(settings, conn, query: str) -> dict:
-  chunks = _fetch_context(conn, query)            # [{"id": "kafka#0", "content": "..."}]
-
-  # Each chunk becomes a citable document; document_index will map back to chunks[i]
+async def generate_answer(settings: Settings, query: str, chunks: list[dict]) -> dict:
+  # Generation ONLY (no retrieval) — the caller owns `chunks` so it can reuse the
+  # SAME context for the faithfulness judge instead of retrieving twice.
   documents = [
     {
       "type": "document",
@@ -74,11 +74,23 @@ async def answer_cited(settings, conn, query: str) -> dict:
     parts.append(block.text)
     for cit in (getattr(block, "citations", None) or []):
       citations.append({
-        "claim": block.text,
         "cited_text": cit.cited_text,                 # GUARANTEED to be real source text
         "source": chunks[cit.document_index]["id"],   # index -> chunk id
       })
-  return {"answer": "".join(parts), "citations": citations}
+
+  in_tok, out_tok = resp.usage.input_tokens, resp.usage.output_tokens
+  return {
+    "answer": "".join(parts),
+    "citations": citations,
+    "input_tokens": in_tok,
+    "output_tokens": out_tok,
+    "cost_usd": round(cost_usd(settings.default_model, in_tok, out_tok), 6),
+  }
+
+
+async def answer_cited(settings, conn, query: str) -> dict:
+  # Convenience wrapper for scripts/tests: fetch + generate in one call.
+  return await generate_answer(settings, query, _fetch_context(conn, query))
 
 async def answer(settings: Settings, conn, query: str) -> dict:
   chunks = _fetch_context(conn, query)

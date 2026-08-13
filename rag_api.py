@@ -1,4 +1,6 @@
 # rag_api.py — Week 3 capstone: semantic search service over the pgvector corpus
+#              Week 4 Day 6: /ask — the full RAG pipeline behind one endpoint
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends, HTTPException, Request
@@ -6,7 +8,10 @@ from pgvector.psycopg import register_vector
 from psycopg_pool import ConnectionPool
 from pydantic import BaseModel, Field
 
+from config import Settings
 from db import DSN, search as db_search   # reuse Day 4-5 retrieval logic verbatim
+from faithfulness import faithfulness
+from generate import generate_answer, _fetch_context
 
 
 def _configure(conn):
@@ -32,6 +37,10 @@ def get_conn(request: Request):
   # Check a connection out of the pool for this request; return it automatically after.
   with request.app.state.pool.connection() as conn:
     yield conn
+
+
+def get_settings() -> Settings:
+  return Settings()
 
 
 class SearchRequest(BaseModel):
@@ -68,3 +77,63 @@ def search(req: SearchRequest, conn=Depends(get_conn)) -> SearchResponse:   # sy
     if sim >= req.min_similarity
   ]
   return SearchResponse(query=req.query, hits=hits, count=len(hits))
+
+
+# ---------------------------------------------------------------------------
+# Week 4 Day 6 capstone: /ask — retrieve -> generate -> (optionally) judge
+# ---------------------------------------------------------------------------
+
+class AskRequest(BaseModel):
+  query: str = Field(min_length=1, max_length=1000)
+  check_faithfulness: bool = False              # off by default: extra call = cost + latency
+
+
+class Citation(BaseModel):
+  source: str
+  cited_text: str
+
+
+class AskResponse(BaseModel):
+  answer: str
+  citations: list[Citation]
+  sources: list[str]
+  input_tokens: int
+  output_tokens: int
+  cost_usd: float
+  faithfulness: float | None = None
+
+
+@app.post("/ask", response_model=AskResponse)
+async def ask(
+  req: AskRequest,
+  request: Request,
+  settings: Settings = Depends(get_settings),
+) -> AskResponse:
+  # async def, because generation and the judge are awaited Anthropic calls.
+  pool = request.app.state.pool
+
+  def _retrieve():
+    # The retrieval half is SYNC (psycopg + Voyage) — it must not run on the loop.
+    with pool.connection() as conn:
+      return _fetch_context(conn, req.query)
+
+  try:
+    chunks = await asyncio.to_thread(_retrieve)                  # don't block the loop
+    result = await generate_answer(settings, req.query, chunks)  # async generation
+  except Exception as e:
+    raise HTTPException(status_code=502, detail="rag pipeline failed") from e
+
+  faith = None
+  if req.check_faithfulness:            # opt-in second model call, judged on the SAME chunks
+    context = "\n".join(f"[{c['id']}] {c['content']}" for c in chunks)
+    faith = round((await faithfulness(settings, context, result["answer"]))["score"], 3)
+
+  return AskResponse(
+    answer=result["answer"],
+    citations=[Citation(**c) for c in result["citations"]],
+    sources=[c["id"] for c in chunks],   # what we actually gave the model
+    input_tokens=result["input_tokens"],
+    output_tokens=result["output_tokens"],
+    cost_usd=result["cost_usd"],
+    faithfulness=faith,
+  )
