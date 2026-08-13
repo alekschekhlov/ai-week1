@@ -38,6 +38,48 @@ def _build_prompt(query: str, chunks: list[dict]) -> str:
   return f"<context>\n{context}\n</context>\n\nQuestion: {query}"
 
 
+# generate.py — API-level citations (replaces prompt-based [id] self-reporting)
+RAG_SYSTEM_CITED = """You answer questions using ONLY the provided documents.
+If the documents don't contain the answer, say exactly:
+"I don't have that information in the provided documents." Do not guess.
+Keep answers under 100 words."""   # note: no manual [id] instruction — the API handles attribution
+
+
+async def answer_cited(settings, conn, query: str) -> dict:
+  chunks = _fetch_context(conn, query)            # [{"id": "kafka#0", "content": "..."}]
+
+  # Each chunk becomes a citable document; document_index will map back to chunks[i]
+  documents = [
+    {
+      "type": "document",
+      "source": {"type": "text", "media_type": "text/plain", "data": c["content"]},
+      "title": c["id"],
+      "citations": {"enabled": True},          # turn on API-level citations
+    }
+    for c in chunks
+  ]
+  content = documents + [{"type": "text", "text": query}]
+
+  client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+  resp = await client.messages.create(
+    model=settings.default_model, max_tokens=settings.max_tokens, temperature=0,
+    system=RAG_SYSTEM_CITED,
+    messages=[{"role": "user", "content": content}],
+  )
+
+  parts, citations = [], []
+  for block in resp.content:
+    if block.type != "text":
+      continue
+    parts.append(block.text)
+    for cit in (getattr(block, "citations", None) or []):
+      citations.append({
+        "claim": block.text,
+        "cited_text": cit.cited_text,                 # GUARANTEED to be real source text
+        "source": chunks[cit.document_index]["id"],   # index -> chunk id
+      })
+  return {"answer": "".join(parts), "citations": citations}
+
 async def answer(settings: Settings, conn, query: str) -> dict:
   chunks = _fetch_context(conn, query)
   user_prompt = _build_prompt(query, chunks)

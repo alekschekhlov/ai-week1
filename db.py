@@ -58,7 +58,7 @@ def setup(conn):
             content     TEXT NOT NULL,
             embedding   vector({DIMS}),
             -- generated tsvector: Postgres keeps the lexical index in sync automatically
-            fts         tsvector GENERATED ALWAYS AS (to_tsvector('simple', content)) STORED
+            fts         tsvector GENERATED ALWAYS AS (to_tsvector('english', content)) STORED
         )
     """)
   for text, source in DOCS:
