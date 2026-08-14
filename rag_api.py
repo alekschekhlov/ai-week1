@@ -89,7 +89,9 @@ class AskRequest(BaseModel):
 
 
 class Citation(BaseModel):
-  source: str
+  doc_id: str
+  section: str | None = None
+  label: str
   cited_text: str
 
 
@@ -125,13 +127,13 @@ async def ask(
 
   faith = None
   if req.check_faithfulness:            # opt-in second model call, judged on the SAME chunks
-    context = "\n".join(f"[{c['id']}] {c['content']}" for c in chunks)
+    context = "\n".join(f"[{c['label']}] {c['content']}" for c in chunks)
     faith = round((await faithfulness(settings, context, result["answer"]))["score"], 3)
 
   return AskResponse(
     answer=result["answer"],
     citations=[Citation(**c) for c in result["citations"]],
-    sources=[c["id"] for c in chunks],   # what we actually gave the model
+    sources=[c["label"] for c in chunks],   # readable labels, attached in _fetch_context
     input_tokens=result["input_tokens"],
     output_tokens=result["output_tokens"],
     cost_usd=result["cost_usd"],

@@ -1,24 +1,25 @@
-# generate_test.py
+# generate_test.py — grounded generation: cites when it can, refuses when it can't
 import asyncio
+
+from bootstrap import fresh_conn
 from config import Settings
-from db import get_conn, setup
-from generate import answer
+from generate import answer_cited
 
 
 async def main():
-  conn = get_conn()
-  setup(conn)
+  conn = fresh_conn()
   settings = Settings()
 
   for q in [
-    "how do I rewind a consumer group?",     # answerable from kafka#0
-    "what is the airspeed velocity of a swallow?",  # NOT in the corpus -> must refuse
-    "who created kafka?"
+    "how do I rewind a consumer group?",             # answerable from kafka.md > Offsets
+    "what is the airspeed velocity of a swallow?",   # NOT in the corpus -> must refuse
+    "who created kafka?",                            # plausible, but not in the corpus
   ]:
-    result = await answer(settings, conn, q)
+    result = await answer_cited(settings, conn, q)
     print(f"\nQ: {q}")
     print(f"A: {result['answer']}")
-    print(f"   sources given: {result['sources']}")
+    print(f"   citations: {[c['label'] for c in result['citations']] or 'none'}")
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+  asyncio.run(main())

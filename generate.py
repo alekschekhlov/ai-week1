@@ -2,69 +2,64 @@
 from anthropic import AsyncAnthropic
 
 from config import Settings
-from db import get_conn                       # or accept a pooled conn
-from hybrid import hybrid_search
 from llm import cost_usd
+from hybrid import hybrid_search
 from rerank import rerank
 
-RAG_SYSTEM = """You answer questions using ONLY the provided context.
-
-<rules>
-- Use only facts from the <context> block. Never use outside knowledge.
-- After each claim, cite the source in brackets, e.g. [kafka#0].
-- If the context does not contain the answer, say exactly:
-  "I don't have that information in the provided documents." Do not guess.
-- Keep answers under 100 words, plain sentences.
-</rules>"""
-
-
-def _fetch_context(conn, query: str, top_k: int = 5) -> list[dict]:
-  # Stage 1-2: hybrid retrieval, then cross-encoder rerank to the best top_k
-  fused = hybrid_search(conn, query, n=30, top_k=15)      # wide net, ids + rrf score
-  # hydrate only the fused ids instead of scanning the table; match on the
-  # reconstructed "source#chunk_index" so we can pass the ids as a Postgres array
-  fused_ids = [fid for (fid, _score) in fused]
-  rows = conn.execute(
-    "SELECT source, chunk_index, content FROM chunks "
-    "WHERE source || '#' || chunk_index = ANY(%s)",
-    (fused_ids,),
-  ).fetchall()
-  by_id = {f"{s}#{i}": {"id": f"{s}#{i}", "content": c} for (s, i, c) in rows}
-  cands = [by_id[fid] for (fid, _score) in fused if fid in by_id]   # keep rrf order
-  return rerank(query, cands, top_k=top_k)
-
-
-def _build_prompt(query: str, chunks: list[dict]) -> str:
-  context = "\n".join(f"[{c['id']}] {c['content']}" for c in chunks)
-  return f"<context>\n{context}\n</context>\n\nQuestion: {query}"
-
-
-# generate.py — API-level citations (replaces prompt-based [id] self-reporting)
 RAG_SYSTEM_CITED = """You answer questions using ONLY the provided documents.
 If the documents don't contain the answer, say exactly:
 "I don't have that information in the provided documents." Do not guess.
-Keep answers under 100 words."""   # note: no manual [id] instruction — the API handles attribution
+Keep answers under 100 words."""
+
+
+def _label(chunk: dict) -> str:
+  # Human-readable citation label: "pods.md > Pod Lifecycle", or just "pods.md" if no section
+  return f"{chunk['doc_id']} > {chunk['section']}" if chunk.get("section") else chunk["doc_id"]
+
+
+def _fetch_context(conn, query: str, top_k: int = 5) -> list[dict]:
+  # Stage 1-2: hybrid retrieve (wide net) -> rerank (narrow). Key on the DB primary key `id`.
+  fused = hybrid_search(conn, query, n=30, top_k=15)     # [(id, rrf_score)]
+  ids = [cid for cid, _score in fused]
+  if not ids:
+    return []
+
+  rows = conn.execute(
+    "SELECT id, doc_id, section, content FROM chunks WHERE id = ANY(%s)", (ids,)
+  ).fetchall()
+  by_id = {r[0]: {"id": r[0], "doc_id": r[1], "section": r[2], "content": r[3]} for r in rows}
+
+  # preserve the fused ranking order when handing candidates to the reranker
+  cands = [by_id[cid] for cid in ids if cid in by_id]
+  chunks = rerank(query, cands, top_k=top_k)             # rerank passes each dict through
+
+  # Attach the citation label ONCE, here. Everything downstream — document titles below,
+  # /ask's `sources`, the faithfulness context — reads c["label"] instead of recomputing
+  # it, so there is exactly one source of truth for how a chunk is named.
+  for c in chunks:
+    c["label"] = _label(c)
+  return chunks
 
 
 async def generate_answer(settings: Settings, query: str, chunks: list[dict]) -> dict:
-  # Generation ONLY (no retrieval) — the caller owns `chunks` so it can reuse the
-  # SAME context for the faithfulness judge instead of retrieving twice.
+  # Generation ONLY (no retrieval) — so the caller can reuse `chunks` for faithfulness.
   documents = [
     {
       "type": "document",
       "source": {"type": "text", "media_type": "text/plain", "data": c["content"]},
-      "title": c["id"],
-      "citations": {"enabled": True},          # turn on API-level citations
+      "title": c["label"],                   # readable title -> better citations
+      "citations": {"enabled": True},
     }
     for c in chunks
   ]
-  content = documents + [{"type": "text", "text": query}]
 
   client = AsyncAnthropic(api_key=settings.anthropic_api_key)
   resp = await client.messages.create(
-    model=settings.default_model, max_tokens=settings.max_tokens, temperature=0,
+    model=settings.default_model,
+    max_tokens=settings.max_tokens,
+    temperature=0,                             # grounded answers want determinism
     system=RAG_SYSTEM_CITED,
-    messages=[{"role": "user", "content": content}],
+    messages=[{"role": "user", "content": documents + [{"type": "text", "text": query}]}],
   )
 
   parts, citations = [], []
@@ -73,9 +68,12 @@ async def generate_answer(settings: Settings, query: str, chunks: list[dict]) ->
       continue
     parts.append(block.text)
     for cit in (getattr(block, "citations", None) or []):
+      src = chunks[cit.document_index]       # document_index maps back to chunks[i]
       citations.append({
-        "cited_text": cit.cited_text,                 # GUARANTEED to be real source text
-        "source": chunks[cit.document_index]["id"],   # index -> chunk id
+        "doc_id": src["doc_id"],
+        "section": src["section"],
+        "label": src["label"],             # e.g. "pods.md > Pod Lifecycle"
+        "cited_text": cit.cited_text,      # guaranteed real source text (API-level)
       })
 
   in_tok, out_tok = resp.usage.input_tokens, resp.usage.output_tokens
@@ -89,25 +87,5 @@ async def generate_answer(settings: Settings, query: str, chunks: list[dict]) ->
 
 
 async def answer_cited(settings, conn, query: str) -> dict:
-  # Convenience wrapper for scripts/tests: fetch + generate in one call.
+  # convenience wrapper: fetch context, then generate
   return await generate_answer(settings, query, _fetch_context(conn, query))
-
-async def answer(settings: Settings, conn, query: str) -> dict:
-  chunks = _fetch_context(conn, query)
-  user_prompt = _build_prompt(query, chunks)
-
-  client = AsyncAnthropic(api_key=settings.anthropic_api_key)
-  resp = await client.messages.create(
-    model=settings.default_model,
-    max_tokens=settings.max_tokens,
-    temperature=0,                          # grounded answers want determinism
-    system=RAG_SYSTEM,
-    messages=[{"role": "user", "content": user_prompt}],
-  )
-  text = "".join(b.text for b in resp.content if b.type == "text")
-  return {
-    "answer": text,
-    "sources": [c["id"] for c in chunks],   # what we actually gave the model
-    "input_tokens": resp.usage.input_tokens,
-    "output_tokens": resp.usage.output_tokens,
-  }
