@@ -1,0 +1,1077 @@
+{
+  "source": "k8s",
+  "model": "claude-opus-5",
+  "items": [
+    {
+      "question": "My app is sensitive to jitter — what does a node do to keep hardware placement stable for its pods?",
+      "answer_substring": "optimize the alignment of node's resources for pods",
+      "chunk_id": 1,
+      "doc_id": "resource-managers.md",
+      "section": "Resource managers"
+    },
+    {
+      "question": "Which kubelet piece is in charge of keeping hardware assignments aligned on a node?",
+      "answer_substring": "Topology Manager* is a kubelet component that aims to coordinate",
+      "chunk_id": 2,
+      "doc_id": "resource-managers.md",
+      "section": "Resource managers > Topology manager"
+    },
+    {
+      "question": "What hands a pod dedicated CPUs instead of shared ones, and who does it consult first?",
+      "answer_substring": "CPU Manager* is a kubelet component that provides exclusive resource allocation",
+      "chunk_id": 3,
+      "doc_id": "resource-managers.md",
+      "section": "Resource managers > CPU manager"
+    },
+    {
+      "question": "Can a node reserve hardware for one pod instead of sharing it around, and how do I choose?",
+      "answer_substring": "the `static` policy allows containers in `Guaranteed` pods with integer CPU\n  `requests` access to exclusive CPUs",
+      "chunk_id": 4,
+      "doc_id": "resource-managers.md",
+      "section": "Resource managers > CPU manager > Policies for assigning CPUs to Pods"
+    },
+    {
+      "question": "How many CPUs on a machine can actually be handed out exclusively?",
+      "answer_substring": "The amount of exclusively allocatable CPUs is equal to the total number of CPUs in the",
+      "chunk_id": 5,
+      "doc_id": "resource-managers.md",
+      "section": "Resource managers > CPU manager > Policies for assigning CPUs to Pods > Static policy"
+    },
+    {
+      "question": "If a container asks for half a CPU, does it still get a core to itself?",
+      "answer_substring": "the container's resource limit for the CPU resource is a fraction. It runs in\nthe shared pool.",
+      "chunk_id": 6,
+      "doc_id": "resource-managers.md",
+      "section": "Resource managers > CPU manager > Policies for assigning CPUs to Pods > Static policy"
+    },
+    {
+      "question": "How do I turn on the experimental CPU alignment options that are hidden by default?",
+      "answer_substring": "`CPUManagerPolicyAlphaOptions` (default disabled). Enable to show alpha-level options.",
+      "chunk_id": 7,
+      "doc_id": "resource-managers.md",
+      "section": "Resource managers > CPU manager > Policies for assigning CPUs to Pods > Static policy > Static policy options {#cpu-policy-static--options}"
+    },
+    {
+      "question": "I've shipped my app and put a Service in front of it — what now?",
+      "answer_substring": "tools to help you manage your application deployment, including scaling and updating",
+      "chunk_id": 29,
+      "doc_id": "management.md",
+      "section": "Managing Workloads"
+    },
+    {
+      "question": "Can I put several related objects in one YAML file, and does their order matter?",
+      "answer_substring": "best to specify the Service first, since that will ensure the scheduler can spread",
+      "chunk_id": 30,
+      "doc_id": "management.md",
+      "section": "Managing Workloads > Organizing resource configurations"
+    },
+    {
+      "question": "Which tool bundles up pre-configured Kubernetes objects, and what are the bundles called?",
+      "answer_substring": "These packages are known as _Helm charts_.",
+      "chunk_id": 32,
+      "doc_id": "management.md",
+      "section": "Managing Workloads > Organizing resource configurations > External tools > Helm {#external-tool-helm}"
+    },
+    {
+      "question": "Which tool rewrites parts of an existing manifest instead of templating it?",
+      "answer_substring": "traverses a Kubernetes manifest to add, remove or update configuration options",
+      "chunk_id": 33,
+      "doc_id": "management.md",
+      "section": "Managing Workloads > Organizing resource configurations > External tools > Kustomize {#external-tool-kustomize}"
+    },
+    {
+      "question": "Is there a way to tear down everything I created from a manifest in one go?",
+      "answer_substring": "extract resource names from configuration files in order to perform other operations",
+      "chunk_id": 34,
+      "doc_id": "management.md",
+      "section": "Managing Workloads > Bulk operations in kubectl"
+    },
+    {
+      "question": "What are the two directions I can grow a workload in?",
+      "answer_substring": "referred to as _horizontal scaling_, while the second is referred to as",
+      "chunk_id": 48,
+      "doc_id": "autoscaling.md",
+      "section": "Autoscaling Workloads"
+    },
+    {
+      "question": "For vertical scaling, what do I have to edit by hand?",
+      "answer_substring": "you need to _patch_ the resource definition of your workload",
+      "chunk_id": 49,
+      "doc_id": "autoscaling.md",
+      "section": "Autoscaling Workloads > Scaling workloads manually"
+    },
+    {
+      "question": "What is meant by automatic scaling of a workload?",
+      "answer_substring": "the ability to automatically update an object that manages a set of Pods",
+      "chunk_id": 50,
+      "doc_id": "autoscaling.md",
+      "section": "Autoscaling Workloads > Scaling workloads automatically"
+    },
+    {
+      "question": "What is the unit I actually run my containers inside on a cluster?",
+      "answer_substring": "In Kubernetes, a Pod represents a set of one or more running",
+      "chunk_id": 59,
+      "doc_id": "_index.md",
+      "section": "Workloads"
+    },
+    {
+      "question": "Can I create a PodGroup without saying how it should be handled by the scheduler?",
+      "answer_substring": "must declare a scheduling policy in its `spec.schedulingPolicy` field",
+      "chunk_id": 64,
+      "doc_id": "workload-api/policies.md",
+      "section": "PodGroup Scheduling Policies"
+    },
+    {
+      "question": "How many policy types are available, and may I combine them?",
+      "answer_substring": "supports two policy types: `basic` and `gang`. You must specify exactly one.",
+      "chunk_id": 65,
+      "doc_id": "workload-api/policies.md",
+      "section": "PodGroup Scheduling Policies > Policy types"
+    },
+    {
+      "question": "What keeps a set of pods physically close together, say in one rack?",
+      "answer_substring": "TAS ensures that all pods within a PodGroup are co-located into a specific topology domain",
+      "chunk_id": 70,
+      "doc_id": "workload-api/topology-aware-scheduling.md",
+      "section": "Topology-Aware Workload Scheduling"
+    },
+    {
+      "question": "Under all-or-nothing placement, how many pods must fit in one domain before anything is committed?",
+      "answer_substring": "It guarantees that at least the specified `minCount` pods can fit together into the same topology domain",
+      "chunk_id": 71,
+      "doc_id": "workload-api/topology-aware-scheduling.md",
+      "section": "Topology-Aware Workload Scheduling > Topology-aware scheduling with gang scheduling policy"
+    },
+    {
+      "question": "If a group and its members carry different priorities, which one wins?",
+      "answer_substring": "which overrides the priority of the individual pods from the group",
+      "chunk_id": 76,
+      "doc_id": "workload-api/disruption-and-priority.md",
+      "section": "Pod Group Disruption and Priority"
+    },
+    {
+      "question": "Which disruption modes exist, and what do I get if I never set one?",
+      "answer_substring": "The API supports two disruption modes: `Pod` and `PodGroup`. The default one is `Pod`.",
+      "chunk_id": 77,
+      "doc_id": "workload-api/disruption-and-priority.md",
+      "section": "Pod Group Disruption and Priority > Disruption mode types"
+    },
+    {
+      "question": "Which controller turns a Workload's templates into runtime objects?",
+      "answer_substring": "The Job controller is the only built-in controller that creates",
+      "chunk_id": 82,
+      "doc_id": "workload-api/_index.md",
+      "section": "Workload API"
+    },
+    {
+      "question": "Is the Workload object where runtime scheduling state actually lives?",
+      "answer_substring": "A `Workload` is a static, long-lived policy template.",
+      "chunk_id": 83,
+      "doc_id": "workload-api/_index.md",
+      "section": "Workload API > What is a Workload?"
+    },
+    {
+      "question": "Can a PodGroup be removed while its pods are still up?",
+      "answer_substring": "scheduled as a unit and protected from premature deletion while its Pods are still running",
+      "chunk_id": 89,
+      "doc_id": "podgroup-api/lifecycle.md",
+      "section": "PodGroup Lifecycle"
+    },
+    {
+      "question": "Which object lets me declare a desired state for my Pods and rolls changes out gradually?",
+      "answer_substring": "changes the actual state to the desired state at a controlled rate",
+      "chunk_id": 401,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments"
+    },
+    {
+      "question": "What stops two ReplicaSets belonging to the same Deployment from claiming each other's Pods?",
+      "answer_substring": "This label ensures that child ReplicaSets of a Deployment do not overlap",
+      "chunk_id": 406,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments > Creating a Deployment > Pod-template-hash label"
+    },
+    {
+      "question": "Does bumping the replica count restart my running Pods?",
+      "answer_substring": "such as scaling the Deployment, do not trigger a rollout",
+      "chunk_id": 407,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments > Updating a Deployment"
+    },
+    {
+      "question": "I picked the wrong labels up front — can I fix the selector on a live Deployment?",
+      "answer_substring": "label selector is **immutable** after creation",
+      "chunk_id": 413,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments > Updating a Deployment > Label selector updates"
+    },
+    {
+      "question": "My new version is crash looping — is the previous one still recoverable?",
+      "answer_substring": "rollout history is kept in the system so that you can rollback anytime you want",
+      "chunk_id": 414,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments > Rolling Back a Deployment"
+    },
+    {
+      "question": "Which command puts me back on the version I was running before?",
+      "answer_substring": "kubectl rollout undo deployment/nginx-deployment",
+      "chunk_id": 420,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments > Rolling Back a Deployment > Rolling Back to a Previous Revision"
+    },
+    {
+      "question": "What happens if the autoscaler kicks in halfway through an update?",
+      "answer_substring": "scales a RollingUpdate Deployment that is in the middle of a rollout",
+      "chunk_id": 424,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments > Scaling a Deployment > Proportional scaling"
+    },
+    {
+      "question": "My update never finishes and just hangs — what usually causes that?",
+      "answer_substring": "may get stuck trying to deploy its newest ReplicaSet without ever completing",
+      "chunk_id": 432,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments > Deployment status > Failed Deployment"
+    },
+    {
+      "question": "How many previous versions are retained for rollback, and can I shrink that?",
+      "answer_substring": "how many old ReplicaSets for this Deployment you want to retain",
+      "chunk_id": 436,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments > Clean up Policy"
+    },
+    {
+      "question": "Why is the API rejecting my manifest over a label mismatch?",
+      "answer_substring": "must match `.spec.template.metadata.labels`, or it will be rejected by the API",
+      "chunk_id": 441,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments > Writing a Deployment Spec > Selector"
+    },
+    {
+      "question": "What are my options for swapping old Pods for new ones, and which one happens if I say nothing?",
+      "answer_substring": "can be \"Recreate\" or \"RollingUpdate\". \"RollingUpdate\" is the default value.",
+      "chunk_id": 442,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments > Writing a Deployment Spec > Strategy"
+    },
+    {
+      "question": "How do I cap how much capacity I lose while an update is in flight?",
+      "answer_substring": "maximum number of Pods that can be unavailable during the update process",
+      "chunk_id": 445,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments > Writing a Deployment Spec > Strategy > Rolling Update Deployment > Max Unavailable"
+    },
+    {
+      "question": "How do I force a wait so a fresh Pod proves it is stable before the rollout moves on?",
+      "answer_substring": "minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing",
+      "chunk_id": 449,
+      "doc_id": "controllers/deployment.md",
+      "section": "Deployments > Writing a Deployment Spec > Min Ready Seconds"
+    },
+    {
+      "question": "What do I use for a batch task that has to finish successfully rather than stay up forever?",
+      "answer_substring": "will continue to retry execution of the Pods until a specified number of them successfully terminate",
+      "chunk_id": 516,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs"
+    },
+    {
+      "question": "How do I list only the Pods spawned by one particular batch task?",
+      "answer_substring": "kubectl get pods --selector=batch.kubernetes.io/job-name=pi",
+      "chunk_id": 519,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs > Running an example Job"
+    },
+    {
+      "question": "What prefix do the automatically applied batch labels carry?",
+      "answer_substring": "prefix for `job-name` and `controller-uid`",
+      "chunk_id": 525,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs > Writing a Job spec > Job Labels"
+    },
+    {
+      "question": "Can one batch task run many workers at once, and what shapes does that come in?",
+      "answer_substring": "There are three main types of task suitable to run as a Job",
+      "chunk_id": 528,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs > Writing a Job spec > Parallel execution for Jobs {#parallel-jobs}"
+    },
+    {
+      "question": "Which feature gate makes batch tasks take part in group scheduling automatically?",
+      "answer_substring": "feature gate is enabled, the Job controller automatically creates",
+      "chunk_id": 531,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs > Integrate with Workload APIs"
+    },
+    {
+      "question": "Do recurring scheduled tasks get a scheduling group on their pod template?",
+      "answer_substring": "do not have `schedulingGroup` set in the `PodTemplate`",
+      "chunk_id": 534,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs > Integrate with Workload APIs > CronJob behavior"
+    },
+    {
+      "question": "Could my program end up running twice at the same moment, and what must it tolerate?",
+      "answer_substring": "then there may be multiple pods running at once",
+      "chunk_id": 537,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs > Handling Pod and container failures"
+    },
+    {
+      "question": "With per-index retries, at what point is the whole batch abandoned?",
+      "answer_substring": "When the total number of failed indexes exceeds 5, then the entire Job is terminated.",
+      "chunk_id": 540,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs > Handling Pod and container failures > Backoff limit per index {#backoff-limit-per-index}"
+    },
+    {
+      "question": "Since which release do removed pods reliably reach a final phase so finalizers clear?",
+      "answer_substring": "Since Kubernetes 1.27, Kubelet transitions deleted pods to a terminal phase",
+      "chunk_id": 543,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs > Handling Pod and container failures > Pod failure policy {#pod-failure-policy}"
+    },
+    {
+      "question": "Why are the pods still sitting there after my batch task already finished?",
+      "answer_substring": "Keeping them around allows you to still view the logs of completed pods",
+      "chunk_id": 546,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs > Job termination and cleanup"
+    },
+    {
+      "question": "What signals that the controller has decided to wind down the remaining pods?",
+      "answer_substring": "adds the `FailureTarget` condition or the `SuccessCriteriaMet` condition",
+      "chunk_id": 549,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs > Job termination and cleanup > Termination of Job pods"
+    },
+    {
+      "question": "Is there a standard shape for chewing through a queue of independent work items?",
+      "answer_substring": "can be used to process a set of independent but related *work items*",
+      "chunk_id": 552,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs > Job patterns"
+    },
+    {
+      "question": "How do I park a batch task temporarily and pick it up again later?",
+      "answer_substring": "The Job's status can be used to determine if a Job is suspended",
+      "chunk_id": 555,
+      "doc_id": "controllers/job.md",
+      "section": "Jobs > Advanced usage > Suspending a Job"
+    },
+    {
+      "question": "What states does a workload pass through from creation to finish?",
+      "answer_substring": "moving through `Running` if at least one of its primary containers starts OK",
+      "chunk_id": 152,
+      "doc_id": "pods/pod-lifecycle.md",
+      "section": "Pod Lifecycle"
+    },
+    {
+      "question": "If something is tied to a Pod's lifetime and an identical replacement appears, does it survive?",
+      "answer_substring": "exists as long as that specific Pod (with that exact UID) exists",
+      "chunk_id": 155,
+      "doc_id": "pods/pod-lifecycle.md",
+      "section": "Pod Lifecycle > Pod lifetime > Associated lifetimes"
+    },
+    {
+      "question": "Besides the overall phase, is there per-container status I can inspect?",
+      "answer_substring": "Kubernetes tracks the state of each container inside a Pod",
+      "chunk_id": 158,
+      "doc_id": "pods/pod-lifecycle.md",
+      "section": "Pod Lifecycle > Container states"
+    },
+    {
+      "question": "My container stopped — what details can I see about why?",
+      "answer_substring": "you see a reason, an exit code",
+      "chunk_id": 161,
+      "doc_id": "pods/pod-lifecycle.md",
+      "section": "Pod Lifecycle > Container states > `Terminated` {#container-state-terminated}"
+    },
+    {
+      "question": "Can I control whether a crashed container gets brought back up?",
+      "answer_substring": "When a container in your Pod stops, or experiences failure, Kubernetes can restart it.",
+      "chunk_id": 164,
+      "doc_id": "pods/pod-lifecycle.md",
+      "section": "Pod Lifecycle > How Pods handle problems with containers {#container-restarts} > Container restarts {#restart-policy}"
+    },
+    {
+      "question": "How does the exit code interact with the restart setting, including for sidecars?",
+      "answer_substring": "how containers behave under different restart policies and exit codes",
+      "chunk_id": 167,
+      "doc_id": "pods/pod-lifecycle.md",
+      "section": "Pod Lifecycle > How Pods handle problems with containers {#container-restarts} > Container restarts {#restart-policy} > Pod-level container restart policy > Restart behavior comparison"
+    },
+    {
+      "question": "Can one container in a Pod behave differently from the rest when it dies?",
+      "answer_substring": "on _individual containers_ to override the Pod restart policy",
+      "chunk_id": 170,
+      "doc_id": "pods/pod-lifecycle.md",
+      "section": "Pod Lifecycle > How Pods handle problems with containers {#container-restarts} > Container restarts {#restart-policy} > Individual container restart policy and rules {#container-restart-rules}"
+    },
+    {
+      "question": "Is there a way to bounce every container when just one of them exits a certain way?",
+      "answer_substring": "you can specify `RestartAllContainers` as an action in `restartPolicyRules`",
+      "chunk_id": 173,
+      "doc_id": "pods/pod-lifecycle.md",
+      "section": "Pod Lifecycle > How Pods handle problems with containers {#container-restarts} > Container restarts {#restart-policy} > Restart All Containers {#restart-all-containers}"
+    },
+    {
+      "question": "My crash loop backs off to five minutes — can I shorten that wait?",
+      "answer_substring": "the maximum delay between container start retries from the default of 300s",
+      "chunk_id": 176,
+      "doc_id": "pods/pod-lifecycle.md",
+      "section": "Pod Lifecycle > How Pods handle problems with containers {#container-restarts} > Configurable container restart delay"
+    },
+    {
+      "question": "Why can't I set those readiness conditions straight from the command line?",
+      "answer_substring": "does not support patching object status",
+      "chunk_id": 179,
+      "doc_id": "pods/pod-lifecycle.md",
+      "section": "Pod Lifecycle > Pod conditions > Status for Pod readiness {#pod-readiness-status}"
+    },
+    {
+      "question": "Can I give a running container more memory without restarting it?",
+      "answer_substring": "without recreating the Pod",
+      "chunk_id": 182,
+      "doc_id": "pods/pod-lifecycle.md",
+      "section": "Pod Lifecycle > Resizing Pods {#pod-resize} > In-place Pod resize {#pod-resize-inplace}"
+    },
+    {
+      "question": "My app boots slowly and gets killed before it is ready — what protects it?",
+      "answer_substring": "does not execute liveness or readiness probes until the startup probe succeeds",
+      "chunk_id": 185,
+      "doc_id": "pods/pod-lifecycle.md",
+      "section": "Pod Lifecycle > Container probes > Startup probe"
+    },
+    {
+      "question": "Which object should I reach for when my app keeps local data?",
+      "answer_substring": "the workload API object used to manage stateful applications",
+      "chunk_id": 454,
+      "doc_id": "controllers/statefulset.md",
+      "section": "StatefulSets"
+    },
+    {
+      "question": "Creation fails with a validation error — which mismatch usually causes it?",
+      "answer_substring": "will result in a validation error during StatefulSet creation",
+      "chunk_id": 458,
+      "doc_id": "controllers/statefulset.md",
+      "section": "StatefulSets > Components > Pod Selector"
+    },
+    {
+      "question": "How are the replicas numbered, and where does the counting begin?",
+      "answer_substring": "pods will be assigned ordinals from 0 up through N-1",
+      "chunk_id": 462,
+      "doc_id": "controllers/statefulset.md",
+      "section": "StatefulSets > Pod Identity > Ordinal Index"
+    },
+    {
+      "question": "Does every replica get its own disk, or do they all share one?",
+      "answer_substring": "each Pod receives one PersistentVolumeClaim",
+      "chunk_id": 466,
+      "doc_id": "controllers/statefulset.md",
+      "section": "StatefulSets > Pod Identity > Stable Storage"
+    },
+    {
+      "question": "Can I bring my replicas up all at once instead of one after another?",
+      "answer_substring": "allows you to relax its ordering guarantees while preserving its uniqueness",
+      "chunk_id": 470,
+      "doc_id": "controllers/statefulset.md",
+      "section": "StatefulSets > Deployment and Scaling Guarantees > Pod Management Policies"
+    },
+    {
+      "question": "In which order are the replicas replaced during an update?",
+      "answer_substring": "It will proceed in the same order as Pod termination",
+      "chunk_id": 474,
+      "doc_id": "controllers/statefulset.md",
+      "section": "StatefulSets > Rolling Updates"
+    },
+    {
+      "question": "Where does the record of past configurations actually live?",
+      "answer_substring": "to track historical configuration changes",
+      "chunk_id": 478,
+      "doc_id": "controllers/statefulset.md",
+      "section": "StatefulSets > Revision history"
+    },
+    {
+      "question": "How do I go back to one specific earlier revision of a stateful app?",
+      "answer_substring": "kubectl rollout undo statefulset/webapp --to-revision=3",
+      "chunk_id": 482,
+      "doc_id": "controllers/statefulset.md",
+      "section": "StatefulSets > Revision history > Managing Revision History > Performing Rollbacks"
+    },
+    {
+      "question": "Which settings should I avoid if I ever want the option to roll back?",
+      "answer_substring": "(disables rollback capability)",
+      "chunk_id": 486,
+      "doc_id": "controllers/statefulset.md",
+      "section": "StatefulSets > Revision history > Managing Revision History > Best Practices > Avoid"
+    },
+    {
+      "question": "What reacts to rising load by running more copies of my app?",
+      "answer_substring": "automatically updates a workload resource",
+      "chunk_id": 318,
+      "doc_id": "autoscaling/horizontal-pod-autoscale.md",
+      "section": "Horizontal Pod Autoscaling"
+    },
+    {
+      "question": "Which extra component do I have to install before CPU-driven scaling works?",
+      "answer_substring": "which needs to be launched separately",
+      "chunk_id": 321,
+      "doc_id": "autoscaling/horizontal-pod-autoscale.md",
+      "section": "Horizontal Pod Autoscaling > How does a HorizontalPodAutoscaler work?"
+    },
+    {
+      "question": "Does the reported utilisation account for pods that aren't ready yet?",
+      "answer_substring": "without factoring in the not-yet-ready pods",
+      "chunk_id": 324,
+      "doc_id": "autoscaling/horizontal-pod-autoscale.md",
+      "section": "Horizontal Pod Autoscaling > How does a HorizontalPodAutoscaler work? > Algorithm details"
+    },
+    {
+      "question": "My app burns CPU while booting and the autoscaler overreacts — how do I prevent that?",
+      "answer_substring": "that doesn't pass until the high CPU usage has passed",
+      "chunk_id": 327,
+      "doc_id": "autoscaling/horizontal-pod-autoscale.md",
+      "section": "Horizontal Pod Autoscaling > Pod readiness and autoscaling metrics > Good practice for pod readiness {#pod-readiness-good-practices}"
+    },
+    {
+      "question": "During a rolling update, what exactly should the autoscaler be attached to?",
+      "answer_substring": "you bind a HorizontalPodAutoscaler to a single",
+      "chunk_id": 330,
+      "doc_id": "autoscaling/horizontal-pod-autoscale.md",
+      "section": "Horizontal Pod Autoscaling > Autoscaling during rolling update"
+    },
+    {
+      "question": "Can I scale on something other than CPU, such as queue depth?",
+      "answer_substring": "to scale based on a custom metric",
+      "chunk_id": 333,
+      "doc_id": "autoscaling/horizontal-pod-autoscale.md",
+      "section": "Horizontal Pod Autoscaling > Scaling on custom metrics"
+    },
+    {
+      "question": "How do I make shrinking slower than growing?",
+      "answer_substring": "you can use the `behavior` field",
+      "chunk_id": 336,
+      "doc_id": "autoscaling/horizontal-pod-autoscale.md",
+      "section": "Horizontal Pod Autoscaling > Configurable scaling behavior"
+    },
+    {
+      "question": "How do I stop tiny metric wobbles from triggering a resize?",
+      "answer_substring": "preventing the autoscaler from scaling for changes below that value",
+      "chunk_id": 339,
+      "doc_id": "autoscaling/horizontal-pod-autoscale.md",
+      "section": "Horizontal Pod Autoscaling > Configurable scaling behavior > Tolerance {#tolerance}"
+    },
+    {
+      "question": "What is the modern replacement for the original replication mechanism?",
+      "answer_substring": "is now the recommended way to set up replication",
+      "chunk_id": 571,
+      "doc_id": "controllers/replicationcontroller.md",
+      "section": "ReplicationController"
+    },
+    {
+      "question": "How do I grab the names of the pods matched by a particular label?",
+      "answer_substring": "pods=$(kubectl get pods --selector=app=nginx --output=jsonpath={.items..metadata.name})",
+      "chunk_id": 574,
+      "doc_id": "controllers/replicationcontroller.md",
+      "section": "ReplicationController > Running an example ReplicationController"
+    },
+    {
+      "question": "If I leave the top-level labels blank on the controller itself, what do they become?",
+      "answer_substring": "if `.metadata.labels` is not specified then it defaults to",
+      "chunk_id": 577,
+      "doc_id": "controllers/replicationcontroller.md",
+      "section": "ReplicationController > Writing a ReplicationController Manifest > Labels on the ReplicationController"
+    },
+    {
+      "question": "When I remove the controller, does it tear the pods down first or drop them immediately?",
+      "answer_substring": "Kubectl will scale the ReplicationController to zero and wait for it to delete",
+      "chunk_id": 580,
+      "doc_id": "controllers/replicationcontroller.md",
+      "section": "ReplicationController > Working with ReplicationControllers > Deleting a ReplicationController and its Pods"
+    },
+    {
+      "question": "If a machine dies, will my replicas come back somewhere else?",
+      "answer_substring": "will ensure that the specified number of pods exists, even in the event of node failure",
+      "chunk_id": 583,
+      "doc_id": "controllers/replicationcontroller.md",
+      "section": "ReplicationController > Common usage patterns > Rescheduling"
+    },
+    {
+      "question": "How do people keep two versions of a service live side by side for a long time?",
+      "answer_substring": "it's common to run multiple releases for an extended period of time",
+      "chunk_id": 586,
+      "doc_id": "controllers/replicationcontroller.md",
+      "section": "ReplicationController > Common usage patterns > Multiple release tracks"
+    },
+    {
+      "question": "Which pods are left out of the count the controller keeps?",
+      "answer_substring": "only terminated pods are excluded from its count",
+      "chunk_id": 589,
+      "doc_id": "controllers/replicationcontroller.md",
+      "section": "ReplicationController > Responsibilities of the ReplicationController"
+    },
+    {
+      "question": "What keeps a fixed number of identical copies alive at all times?",
+      "answer_substring": "maintain a stable set of replica Pods running at any given time",
+      "chunk_id": 491,
+      "doc_id": "controllers/replicaset.md",
+      "section": "ReplicaSet"
+    },
+    {
+      "question": "How can I confirm which controller actually owns a given pod?",
+      "answer_substring": "verify that the owner reference of these",
+      "chunk_id": 495,
+      "doc_id": "controllers/replicaset.md",
+      "section": "ReplicaSet > Example"
+    },
+    {
+      "question": "What must the template inside the manifest carry, and what should I watch out for?",
+      "answer_substring": "which is also required to have labels in place",
+      "chunk_id": 499,
+      "doc_id": "controllers/replicaset.md",
+      "section": "ReplicaSet > Writing a ReplicaSet manifest > Pod Template"
+    },
+    {
+      "question": "Can I remove the controller but leave its pods running?",
+      "answer_substring": "without affecting any of its Pods using",
+      "chunk_id": 503,
+      "doc_id": "controllers/replicaset.md",
+      "section": "ReplicaSet > Working with ReplicaSets > Deleting just a ReplicaSet"
+    },
+    {
+      "question": "When scaling down, can I influence which copies are killed first?",
+      "answer_substring": "users can set a preference regarding which pods to remove first when downscaling",
+      "chunk_id": 507,
+      "doc_id": "controllers/replicaset.md",
+      "section": "ReplicaSet > Working with ReplicaSets > Pod deletion cost"
+    },
+    {
+      "question": "Why not just create the pods by hand instead of using a controller?",
+      "answer_substring": "replaces Pods that are deleted or terminated for any reason",
+      "chunk_id": 511,
+      "doc_id": "controllers/replicaset.md",
+      "section": "ReplicaSet > Alternatives to ReplicaSet > Bare Pods"
+    },
+    {
+      "question": "What is the smallest thing I can actually deploy, and what does it hold?",
+      "answer_substring": "smallest deployable units of computing that you can create and manage",
+      "chunk_id": 294,
+      "doc_id": "pods/_index.md",
+      "section": "Pods"
+    },
+    {
+      "question": "Should I be creating these one at a time by hand?",
+      "answer_substring": "designed as relatively ephemeral, disposable entities",
+      "chunk_id": 298,
+      "doc_id": "pods/_index.md",
+      "section": "Pods > Working with Pods"
+    },
+    {
+      "question": "How do higher-level controllers know what to stamp out copies from?",
+      "answer_substring": "create Pods from a _pod template_ and manage those Pods on your behalf",
+      "chunk_id": 302,
+      "doc_id": "pods/_index.md",
+      "section": "Pods > Working with Pods > Pod templates"
+    },
+    {
+      "question": "Is there a counter that tells me how many times a spec has been edited?",
+      "answer_substring": "every update to   mutable fields in the pod's spec will increment",
+      "chunk_id": 306,
+      "doc_id": "pods/_index.md",
+      "section": "Pods > Pod update and replacement > Pod generation"
+    },
+    {
+      "question": "How do two containers side by side hand files to each other?",
+      "answer_substring": "All containers in the Pod can access the shared volumes, allowing those containers to share data",
+      "chunk_id": 310,
+      "doc_id": "pods/_index.md",
+      "section": "Pods > Resource sharing and communication > Storage in Pods {#pod-storage}"
+    },
+    {
+      "question": "Can something run on a node without the control plane managing it?",
+      "answer_substring": "managed directly by the kubelet daemon on a specific node",
+      "chunk_id": 314,
+      "doc_id": "pods/_index.md",
+      "section": "Pods > Static Pods"
+    },
+    {
+      "question": "Which priority levels ship with the cluster out of the box?",
+      "answer_substring": "Kubernetes provides two built-in PriorityClasses",
+      "chunk_id": 240,
+      "doc_id": "pods/advanced-pod-config.md",
+      "section": "Advanced Pod Configuration > PriorityClasses > Built-in PriorityClasses"
+    },
+    {
+      "question": "How do I set a security default once for everything inside, instead of per container?",
+      "answer_substring": "you might want to set a default, without any container-level overrides",
+      "chunk_id": 244,
+      "doc_id": "pods/advanced-pod-config.md",
+      "section": "Advanced Pod Configuration > Pod and container level security context configuration {#security-context} > Pod-wide `securityContext` {#pod-level-security-context}"
+    },
+    {
+      "question": "Which knobs can I turn — user IDs, Linux capabilities, seccomp?",
+      "answer_substring": "**Capabilities**: Add or drop Linux capabilities",
+      "chunk_id": 248,
+      "doc_id": "pods/advanced-pod-config.md",
+      "section": "Advanced Pod Configuration > Pod and container level security context configuration {#security-context} > Security context options"
+    },
+    {
+      "question": "How do I keep two workloads apart, or together, based on what's already on a machine?",
+      "answer_substring": "based on the labels of _other Pods_ that are already running on nodes",
+      "chunk_id": 252,
+      "doc_id": "pods/advanced-pod-config.md",
+      "section": "Advanced Pod Configuration > Influencing Pod scheduling decisions {#scheduling} > Pod affinity and anti-affinity"
+    },
+    {
+      "question": "How does the cluster keep checking that my container is still healthy?",
+      "answer_substring": "A probe is a diagnostic performed periodically by the",
+      "chunk_id": 199,
+      "doc_id": "pods/probes.md",
+      "section": "Liveness, Readiness, and Startup Probes"
+    },
+    {
+      "question": "My process is alive but wedged and making no progress — what catches that?",
+      "answer_substring": "could catch a deadlock, where an application is running, but unable to make progress",
+      "chunk_id": 202,
+      "doc_id": "pods/probes.md",
+      "section": "Liveness, Readiness, and Startup Probes > Types of probe {#types-of-probe} > Liveness probe {#liveness-probe}"
+    },
+    {
+      "question": "If my process already exits on its own when it breaks, do I still need a health check?",
+      "answer_substring": "you do not necessarily need a liveness probe",
+      "chunk_id": 205,
+      "doc_id": "pods/probes.md",
+      "section": "Liveness, Readiness, and Startup Probes > When to use each probe {#when-to-use-each-probe} > When should you use a liveness probe? {#when-should-you-use-a-liveness-probe}"
+    },
+    {
+      "question": "What are the possible outcomes of a single health check run?",
+      "answer_substring": "Each probe has one of three results",
+      "chunk_id": 208,
+      "doc_id": "pods/probes.md",
+      "section": "Liveness, Readiness, and Startup Probes > Probe results {#probe-results}"
+    },
+    {
+      "question": "Can I set a different shutdown grace period for a failed health check than for the pod overall?",
+      "answer_substring": "users can specify a probe-level `terminationGracePeriodSeconds`",
+      "chunk_id": 211,
+      "doc_id": "pods/probes.md",
+      "section": "Liveness, Readiness, and Startup Probes > Configuration fields {#configure-probes} > Probe-level `terminationGracePeriodSeconds` {#probe-level-terminationgraceperiodseconds}"
+    },
+    {
+      "question": "What tunes the CPU and memory numbers on a workload for me instead of adding copies?",
+      "answer_substring": "with the aim of automatically adjusting infrastructure",
+      "chunk_id": 348,
+      "doc_id": "autoscaling/vertical-pod-autoscale.md",
+      "section": "Vertical Pod Autoscaling"
+    },
+    {
+      "question": "Which field decides whether recommendations get applied automatically or just reported?",
+      "answer_substring": "You configure the update mode using the `updateMode` field",
+      "chunk_id": 352,
+      "doc_id": "autoscaling/vertical-pod-autoscale.md",
+      "section": "Vertical Pod Autoscaling > Update modes"
+    },
+    {
+      "question": "Is there a mode that resizes without a restart and only recreates when it has to?",
+      "answer_substring": "attempts to update Pod resource requests and limits without restarting the Pod when possible",
+      "chunk_id": 356,
+      "doc_id": "autoscaling/vertical-pod-autoscale.md",
+      "section": "Vertical Pod Autoscaling > Update modes > InPlaceOrRecreate {#updateMode-InPlaceOrRecreate}"
+    },
+    {
+      "question": "How do I stop the recommender from suggesting absurdly small or huge numbers?",
+      "answer_substring": "will never recommend resources below `minAllowed` or above `maxAllowed`",
+      "chunk_id": 360,
+      "doc_id": "autoscaling/vertical-pod-autoscale.md",
+      "section": "Vertical Pod Autoscaling > Resource policies > minAllowed and maxAllowed"
+    },
+    {
+      "question": "How do I get exactly one copy of an agent on every machine, including new ones?",
+      "answer_substring": "As nodes are added to the cluster, Pods are added to them.",
+      "chunk_id": 385,
+      "doc_id": "controllers/daemonset.md",
+      "section": "DaemonSet"
+    },
+    {
+      "question": "Does the per-node agent need a selector, and how does it behave?",
+      "answer_substring": "You must specify a pod selector that matches the labels",
+      "chunk_id": 389,
+      "doc_id": "controllers/daemonset.md",
+      "section": "DaemonSet > Writing a DaemonSet Spec > Pod Selector"
+    },
+    {
+      "question": "Can my node agent land on a machine whose network isn't up yet?",
+      "answer_substring": "Such DaemonSet Pods can be scheduled onto nodes with unavailable network",
+      "chunk_id": 393,
+      "doc_id": "controllers/daemonset.md",
+      "section": "DaemonSet > How Daemon Pods are scheduled > Taints and tolerations"
+    },
+    {
+      "question": "Why not just pin a pod to a node by hand instead of using the per-node controller?",
+      "answer_substring": "replaces Pods that are deleted or terminated for any reason",
+      "chunk_id": 397,
+      "doc_id": "controllers/daemonset.md",
+      "section": "DaemonSet > Alternatives to DaemonSet > Bare Pods"
+    },
+    {
+      "question": "How do I run a nightly backup on a repeating timetable?",
+      "answer_substring": "One CronJob object is like one line of a _crontab_",
+      "chunk_id": 370,
+      "doc_id": "controllers/cron-jobs.md",
+      "section": "CronJob"
+    },
+    {
+      "question": "Does the schedule field accept a question mark, and what does it mean?",
+      "answer_substring": "has the same meaning as an asterisk",
+      "chunk_id": 373,
+      "doc_id": "controllers/cron-jobs.md",
+      "section": "CronJob > Writing a CronJob spec > Schedule syntax"
+    },
+    {
+      "question": "What if the previous run hasn't finished when the next one is due?",
+      "answer_substring": "It specifies how to treat concurrent executions of a Job",
+      "chunk_id": 376,
+      "doc_id": "controllers/cron-jobs.md",
+      "section": "CronJob > Writing a CronJob spec > Concurrency policy"
+    },
+    {
+      "question": "Whose clock is my timetable interpreted against if I don't say?",
+      "answer_substring": "interprets schedules relative to its local time zone",
+      "chunk_id": 379,
+      "doc_id": "controllers/cron-jobs.md",
+      "section": "CronJob > Writing a CronJob spec > Time zones"
+    },
+    {
+      "question": "How does the cluster decide which of my workloads to sacrifice first under pressure?",
+      "answer_substring": "as a consequence of the resource constraints that you specify",
+      "chunk_id": 261,
+      "doc_id": "pods/pod-qos.md",
+      "section": "Pod Quality of Service Classes"
+    },
+    {
+      "question": "What exactly do I have to set on every container to get the top tier?",
+      "answer_substring": "Every Container in the Pod must have a memory limit and a memory request, both greater than zero.",
+      "chunk_id": 264,
+      "doc_id": "pods/pod-qos.md",
+      "section": "Pod Quality of Service Classes > Quality of Service classes > Guaranteed > Criteria"
+    },
+    {
+      "question": "If I specify nothing at all about resources, what can my container still use?",
+      "answer_substring": "can use node resources that aren't specifically assigned to Pods in other QoS classes",
+      "chunk_id": 267,
+      "doc_id": "pods/pod-qos.md",
+      "section": "Pod Quality of Service Classes > Quality of Service classes > BestEffort"
+    },
+    {
+      "question": "Is there a soft ceiling that slows allocation before the hard one is hit?",
+      "answer_substring": "to throttle memory allocation before the workload hits its hard limit",
+      "chunk_id": 270,
+      "doc_id": "pods/pod-qos.md",
+      "section": "Pod Quality of Service Classes > Memory QoS with cgroup v2 > Memory throttling"
+    },
+    {
+      "question": "How do I run a setup script with tools that aren't in my application image?",
+      "answer_substring": "specialized containers that run before app containers",
+      "chunk_id": 275,
+      "doc_id": "pods/init-containers.md",
+      "section": "Init Containers"
+    },
+    {
+      "question": "What is the difference between a helper that finishes and one that keeps running alongside?",
+      "answer_substring": "init containers are not continuously run",
+      "chunk_id": 278,
+      "doc_id": "pods/init-containers.md",
+      "section": "Init Containers > Understanding init containers > Differences from sidecar containers"
+    },
+    {
+      "question": "How do I hold my app back until a database and another service are reachable?",
+      "answer_substring": "The first waits for `myservice`, and the second waits for `mydb`",
+      "chunk_id": 281,
+      "doc_id": "pods/init-containers.md",
+      "section": "Init Containers > Using init containers > Examples > Init containers in use"
+    },
+    {
+      "question": "Do the setup steps run in the order I list them, and what has to be ready first?",
+      "answer_substring": "delays running init containers until the networking and storage are ready",
+      "chunk_id": 284,
+      "doc_id": "pods/init-containers.md",
+      "section": "Init Containers > Detailed behavior"
+    },
+    {
+      "question": "What kinds of interruption can hit my running copies, and who should care?",
+      "answer_substring": "need to understand what types of disruptions can happen to Pods",
+      "chunk_id": 223,
+      "doc_id": "pods/disruptions.md",
+      "section": "Disruptions"
+    },
+    {
+      "question": "How does the control plane figure out which workload a given pod belongs to?",
+      "answer_substring": "by examining the `.metadata.ownerReferences` of the Pod",
+      "chunk_id": 227,
+      "doc_id": "pods/disruptions.md",
+      "section": "Disruptions > Pod disruption budgets"
+    },
+    {
+      "question": "Is there a marker telling me a pod is about to be taken away, and why?",
+      "answer_substring": "is added to indicate that the Pod is about to be deleted due to a",
+      "chunk_id": 231,
+      "doc_id": "pods/disruptions.md",
+      "section": "Disruptions > Pod disruption conditions {#pod-disruption-conditions}"
+    },
+    {
+      "question": "What are those true/false markers attached to an object's status?",
+      "answer_substring": "Conditions are markers for some aspect of the actual state",
+      "chunk_id": 134,
+      "doc_id": "pods/pod-condition.md",
+      "section": "Pod Conditions"
+    },
+    {
+      "question": "Which command shows me the full status block including those markers?",
+      "answer_substring": "kubectl get pod <pod-name> -o yaml",
+      "chunk_id": 138,
+      "doc_id": "pods/pod-condition.md",
+      "section": "Pod Conditions > Lifecycle Pod conditions {#lifecycle-pod-conditions}"
+    },
+    {
+      "question": "After cleanup, what happens to pods left hanging in a non-final phase?",
+      "answer_substring": "will also mark them as failed if they are in a non-terminal phase",
+      "chunk_id": 142,
+      "doc_id": "pods/pod-condition.md",
+      "section": "Pod Conditions > Other Pod conditions {#other-pod-conditions} > DisruptionTarget {#disruption-target}"
+    },
+    {
+      "question": "How can a process be root inside the container but harmless on the machine itself?",
+      "answer_substring": "isolates the user running inside the container from the one in the host",
+      "chunk_id": 106,
+      "doc_id": "pods/user-namespaces.md",
+      "section": "User Namespaces"
+    },
+    {
+      "question": "Which UID range does the kubelet hand out by default, and why that one?",
+      "answer_substring": "assigns pods UIDs/GIDs above the range 0-65535",
+      "chunk_id": 110,
+      "doc_id": "pods/user-namespaces.md",
+      "section": "User Namespaces > Set up a node to support user namespaces"
+    },
+    {
+      "question": "Which host-sharing settings become forbidden once I turn on that isolation?",
+      "answer_substring": "it is disallowed to use other host namespaces",
+      "chunk_id": 114,
+      "doc_id": "pods/user-namespaces.md",
+      "section": "User Namespaces > Limitations"
+    },
+    {
+      "question": "What is the runtime counterpart to the template that defines group scheduling policy?",
+      "answer_substring": "a runtime object that represents a group of Pods scheduled together as a single unit",
+      "chunk_id": 96,
+      "doc_id": "podgroup-api/_index.md",
+      "section": "PodGroup API"
+    },
+    {
+      "question": "Where does the policy on a runtime group come from when a controller creates it?",
+      "answer_substring": "When a workload controller creates the PodGroup, this policy is",
+      "chunk_id": 99,
+      "doc_id": "podgroup-api/_index.md",
+      "section": "PodGroup API > API structure > Scheduling policy"
+    },
+    {
+      "question": "How do I tell whether the whole group actually got placed?",
+      "answer_substring": "The primary condition is `PodGroupScheduled`",
+      "chunk_id": 102,
+      "doc_id": "podgroup-api/_index.md",
+      "section": "PodGroup API > API structure > Status"
+    },
+    {
+      "question": "What do I call the helper that runs beside my app to extend it?",
+      "answer_substring": "used to enhance or to extend the functionality of the primary",
+      "chunk_id": 118,
+      "doc_id": "pods/sidecar-containers.md",
+      "section": "Sidecar Containers"
+    },
+    {
+      "question": "Which restart setting turns a startup helper into a long-lived companion?",
+      "answer_substring": "it will start and remain running during the entire life of the Pod",
+      "chunk_id": 121,
+      "doc_id": "pods/sidecar-containers.md",
+      "section": "Sidecar Containers > Sidecar containers and Pod lifecycle"
+    },
+    {
+      "question": "Does the companion container run at the same time as the app or before it?",
+      "answer_substring": "run concurrently with the main application container",
+      "chunk_id": 124,
+      "doc_id": "pods/sidecar-containers.md",
+      "section": "Sidecar Containers > Differences from init containers"
+    },
+    {
+      "question": "How does my process learn its own name and namespace without calling the API?",
+      "answer_substring": "allows containers to consume information about themselves",
+      "chunk_id": 128,
+      "doc_id": "pods/downward-api.md",
+      "section": "Downward API"
+    },
+    {
+      "question": "Can I expose my own CPU and memory limits to the process as an environment variable?",
+      "answer_substring": "for resources such as CPU and memory",
+      "chunk_id": 131,
+      "doc_id": "pods/downward-api.md",
+      "section": "Downward API > Available fields > Information available via `resourceFieldRef` {#downwardapi-resourceFieldRef}"
+    },
+    {
+      "question": "What blocks removal until the last member has stopped?",
+      "answer_substring": "A dedicated finalizer ensures that deletion is blocked",
+      "chunk_id": 92,
+      "doc_id": "podgroup-api/lifecycle.md",
+      "section": "PodGroup Lifecycle > Deletion protection"
+    },
+    {
+      "question": "Who watches the manifest files on disk when the control plane isn't involved?",
+      "answer_substring": "the kubelet watches each stati",
+      "chunk_id": 147,
+      "doc_id": "pods/static-pods.md",
+      "section": "Static Pods"
+    },
+    {
+      "question": "How do I mark that a single workload belongs to a co-scheduled set?",
+      "answer_substring": "to indicate that the `Pod` belongs to a group of `Pods` scheduled together",
+      "chunk_id": 218,
+      "doc_id": "pods/scheduling-group.md",
+      "section": "Scheduling Group"
+    },
+    {
+      "question": "Where do I read about changing the machine name a container sees and what breaks?",
+      "answer_substring": "potential side effects after configuration, and the underlying mechanics",
+      "chunk_id": 256,
+      "doc_id": "pods/pod-hostname.md",
+      "section": "Pod Hostname"
+    },
+    {
+      "question": "How do I attach a debugging shell to something already running that has no shell?",
+      "answer_substring": "a special type of container that runs temporarily in an existing",
+      "chunk_id": 289,
+      "doc_id": "pods/ephemeral-containers.md",
+      "section": "Ephemeral Containers"
+    },
+    {
+      "question": "How do I have finished batch runs clean themselves up after a while?",
+      "answer_substring": "provides a TTL (time to live) mechanism to limit the lifetime of Job objects that have finished execution",
+      "chunk_id": 365,
+      "doc_id": "controllers/ttlafterfinished.md",
+      "section": "Automatic Cleanup for Finished Jobs"
+    },
+    {
+      "question": "Which built-in APIs exist so I don't have to babysit containers one by one?",
+      "answer_substring": "several built-in APIs for declarative management",
+      "chunk_id": 569,
+      "doc_id": "controllers/_index.md",
+      "section": "Workload Management"
+    },
+    {
+      "question": "How do I run one workload under a stronger isolation runtime than the rest?",
+      "answer_substring": "allows you to specify the low-level container runtime for a Pod",
+      "chunk_id": 241,
+      "doc_id": "pods/advanced-pod-config.md",
+      "section": "Advanced Pod Configuration > RuntimeClasses"
+    }
+  ]
+}

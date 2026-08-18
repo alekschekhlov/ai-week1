@@ -1,5 +1,12 @@
 # rerank.py
 import voyageai
+from dotenv import load_dotenv
+
+# The client reads VOYAGE_API_KEY at construction, and this module builds one at import
+# time — so .env must be loaded HERE. Relying on some other module having called
+# load_dotenv() first makes the key depend on import order, which fails silently until
+# the first rerank call.
+load_dotenv()
 
 vo = voyageai.Client()
 

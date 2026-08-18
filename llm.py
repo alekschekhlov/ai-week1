@@ -52,7 +52,9 @@ async def ask_streaming(settings: Settings, prompt: str) -> str:
 # NOTE: verify against current Anthropic pricing — these change over time
 PRICES: dict[str, tuple[float, float]] = {
     "claude-haiku-4-5-20251001": (1.0, 5.0),
+    "claude-haiku-4-5": (1.0, 5.0),
     "claude-sonnet-5": (3.0, 15.0),
+    "claude-opus-5": (5.0, 25.0),
     "claude-opus-4-8": (5.0, 25.0),
 }
 
